@@ -1,6 +1,8 @@
 # coding: utf-8
 
 import unittest
+
+import os
 import csv
 from datetime import datetime as dt
 
@@ -88,7 +90,7 @@ class RecommnedationDecisionTreeTestCase(unittest.TestCase):
         self.assertEqual(self.rDT.target_hour, 10)
 
     def test_X_data_list(self):
-        dlist = self.rDT.X_data_list
+        dlist = self.rDT.train_X_list
 
         # length
         self.assertEqual(len(dlist), self.data_list_num)
@@ -102,7 +104,7 @@ class RecommnedationDecisionTreeTestCase(unittest.TestCase):
         self.assertEqual(dlist[4][2], 34.2)
 
     def test_Y_data_list(self):
-        dlist = self.rDT.Y_data_list
+        dlist = self.rDT.train_Y_list
 
         # length
         self.assertEqual(len(dlist), self.data_list_num)
@@ -130,5 +132,8 @@ class RecommnedationDecisionTreeTestCase(unittest.TestCase):
         self.assertEqual(y[2], 1)
         self.assertEqual(y[3], 0)
 
-    def test__ret_trained_DT_clf(self):
-        pass
+    def test_get_test_X_list(self):
+        OWM_API_KEY = os.getenv('OWM_API_KEY')
+        self.rDT.get_test_X_list(OWM_API_KEY)
+        dlist = self.rDT.test_X_list
+        self.assertEqual(len(dlist), 5)

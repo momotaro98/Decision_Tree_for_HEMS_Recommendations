@@ -3,6 +3,9 @@
 '''
 1. [] Building Decision Tree (DT) Model from past Tenki and HEMS data
   1. [X] Make Decision Table
+    * [] SettingTemp
+    * [] TotalUsage
+    * [X] ChangeUsage
   2. [X] Make Decision Tree
 
 2. Decide to deliver the contents using the DT Model and the today's Tenki data
@@ -24,13 +27,13 @@ class RecommnedationDecisionTree:
         # TODO: インスタンス化でどこまでデータを整えるか
 
         # process making lists
-        self.X_data_list = self._ret_X_data_list()
-        self.Y_data_list = self._ret_Y_data_list()
+        self.train_X_list = self._ret_train_X_list()
+        self.train_Y_list = self._ret_train_Y_list()
 
         # get Decision Tree
         self.clf = self._ret_trained_DT_clf()
 
-    def _ret_X_data_list(self):
+    def _ret_train_X_list(self):
         '''
         X data is Tenki data
 
@@ -48,13 +51,13 @@ class RecommnedationDecisionTree:
         [date_list, weekday_list, max_temperature_list, min_temperature_list, ave_humidity_list, day_tenki_list]
 
         '''
-        X_data_list = utils.ret_outer_data_list(
+        train_X_list = utils.ret_outer_data_list(
             start_dt=self.start_train_dt,
             end_dt=self.end_train_dt
         )
-        return X_data_list
+        return train_X_list
 
-    def _ret_Y_data_list(self):
+    def _ret_train_Y_list(self):
         '''
         Y data (label data) is HEMS data
 
@@ -104,12 +107,12 @@ class RecommnedationDecisionTree:
         スタートの日付が同じであるかを確認する
         """
         # check if the start date is same
-        if not self.X_data_list[0][0] == self.Y_data_list[0][0]:
+        if not self.train_X_list[0][0] == self.train_Y_list[0][0]:
             raise Exception('X list Y list start_date Different Error!')
 
         # slice except datetime
-        x = [row[1:] for row in self.X_data_list]
-        y = [row[1] for row in self.Y_data_list]
+        x = [row[1:] for row in self.train_X_list]
+        y = [row[1] for row in self.train_Y_list]
 
         # check if the lists length is same
         if not len(x) == len(y):
@@ -124,23 +127,19 @@ class RecommnedationDecisionTree:
         clf = utils.ret_trained_DT_clf(X, Y)
         return clf
 
-    def get_pred_X(self):
+    def get_test_X_list(self, OWM_API_KEY):
         """
-        翌日の天気情報を取得する
+        '現在'の天気情報を取得する
 
-        make self.pred_X (ndarray)
-
-        self.pred_X
-        [
-            [datetime(2016, 12, 24), 1.0, 14.2, 4.2, 35.2, 0.0],
-        ]
-        convert ndarray
+        self.test_X_list example
+        [1.0, 34.2, 25.8, 50.0, 0.0]
         """
-        pred_X = [datetime(2016, 12, 24), 1.0, 14.2, 4.2, 35.2, 0.0]
-        pass
+        self.test_X_list = utils.ret_predicted_outer_data_list(OWM_API_KEY)
 
     def ret_decision_flags(self):
-        """
-        self.clf.predict(self.pred_X)
-        """
-        pass
+        # convert ndarray
+        test_x = [self.test_X_list]
+        test_X = utils.be_ndarray(test_x)
+
+        # Predict the Y label
+        pred_Y = self.clf.predict(test_X)
