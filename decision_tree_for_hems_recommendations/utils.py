@@ -1,6 +1,10 @@
-from tenkishocho import DayPerMonthTenki
 from datetime import datetime as dt
 from datetime import timedelta as delta
+
+import numpy as np
+from sklearn.tree.tree import DecisionTreeClassifier
+
+from tenkishocho import DayPerMonthTenki
 
 
 def is_rain_or_not(char):
@@ -141,3 +145,13 @@ def ret_date_list(start_dt, end_dt):
         ret_list.append(stat_dt.date())
         stat_dt += delta(days=1)
     return ret_list
+
+
+def be_ndarray(x):
+    return np.array(x)
+
+
+def ret_trained_DT_clf(X, Y):
+    clf = DecisionTreeClassifier(max_depth=3)
+    clf.fit(X, Y)
+    return clf

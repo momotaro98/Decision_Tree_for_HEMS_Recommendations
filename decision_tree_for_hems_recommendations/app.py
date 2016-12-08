@@ -2,8 +2,8 @@
 
 '''
 1. [] Building Decision Tree (DT) Model from past Tenki and HEMS data
-  1. [] Make Decision Table
-  2. [] Make Decision Tree
+  1. [X] Make Decision Table
+  2. [X] Make Decision Tree
 
 2. Decide to deliver the contents using the DT Model and the today's Tenki data
   1. [] Get the today's Tenki data
@@ -21,9 +21,14 @@ class RecommnedationDecisionTree:
         self.ac_logs_list = ac_logs_list
         self.target_hour = target_hour
 
+        # TODO: インスタンス化でどこまでデータを整えるか
+
         # process making lists
         self.X_data_list = self._ret_X_data_list()
         self.Y_data_list = self._ret_Y_data_list()
+
+        # get Decision Tree
+        self.clf = self._ret_trained_DT_clf()
 
     def _ret_X_data_list(self):
         '''
@@ -92,31 +97,50 @@ class RecommnedationDecisionTree:
                 ret_list[last_1label_index][1] = 1
         return ret_list
 
-    def make_decision_table(self):
-        '''
-        X_data
+    def _ret_decision_table(self):
+        """
+        学習用の訓練データ、訓練ラベルのリストを返す
+        そのとき、学習用のx，yの長さが同じであるか
+        スタートの日付が同じであるかを確認する
+        """
+        # check if the start date is same
+        if not self.X_data_list[0][0] == self.Y_data_list[0][0]:
+            raise Exception('X list Y list start_date Different Error!')
+
+        # slice except datetime
+        x = [row[1:] for row in self.X_data_list]
+        y = [row[1] for row in self.Y_data_list]
+
+        # check if the lists length is same
+        if not len(x) == len(y):
+            raise Exception('X list and Y list Different length Error!')
+
+        return x, y
+
+    def _ret_trained_DT_clf(self):
+        x, y = self._ret_decision_table()
+        X = utils.be_ndarray(x)
+        Y = utils.be_ndarray(y)
+        clf = utils.ret_trained_DT_clf(X, Y)
+        return clf
+
+    def get_pred_X(self):
+        """
+        翌日の天気情報を取得する
+
+        make self.pred_X (ndarray)
+
+        self.pred_X
         [
-          [],
-          [],
-          [],
-          [],
+            [datetime(2016, 12, 24), 1.0, 14.2, 4.2, 35.2, 0.0],
         ]
-
-        Y_data
-        [
-          0,
-          0,
-          0,
-          0,
-        ]
-        '''
+        convert ndarray
+        """
+        pred_X = [datetime(2016, 12, 24), 1.0, 14.2, 4.2, 35.2, 0.0]
         pass
 
-    def make_decision_tree(self):
-        pass
-
-    def get_the_predicted_tenki_data(self):
-        pass
-
-    def ret_the_decision_flags(self):
+    def ret_decision_flags(self):
+        """
+        self.clf.predict(self.pred_X)
+        """
         pass
