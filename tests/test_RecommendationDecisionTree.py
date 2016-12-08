@@ -112,3 +112,23 @@ class RecommnedationDecisionTreeTestCase(unittest.TestCase):
         self.assertEqual(dlist[1][1], 0)
         self.assertEqual(dlist[2][1], 1)
         self.assertEqual(dlist[3][1], 0)
+
+    def test__ret_decision_table(self):
+        x, y = self.rDT._ret_decision_table()
+
+        # length
+        self.assertEqual(len(x), self.data_list_num)
+        self.assertEqual(len(y), self.data_list_num)
+
+        # x
+        self.assertEqual(x[0][0], 0.0)
+        self.assertEqual(x[4][0], 1.0)
+
+        # y
+        self.assertEqual(y[0], 0)
+        self.assertEqual(y[1], 0)
+        self.assertEqual(y[2], 1)
+        self.assertEqual(y[3], 0)
+
+    def test__ret_trained_DT_clf(self):
+        pass
