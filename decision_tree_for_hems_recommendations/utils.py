@@ -131,3 +131,13 @@ def ret_outer_data_list(start_dt, end_dt):
     )]
 
     return ret_list
+
+
+def ret_date_list(start_dt, end_dt):
+    stat_dt = start_dt
+    ret_list = []
+    while stat_dt <= end_dt:
+        # 日付リスト作成
+        ret_list.append(stat_dt.date())
+        stat_dt += delta(days=1)
+    return ret_list
