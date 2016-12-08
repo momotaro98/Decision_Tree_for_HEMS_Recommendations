@@ -1,7 +1,7 @@
 # coding: utf-8
 
 '''
-1. [] Building Decision Tree (DT) Model from past Tenki and HEMS data
+1. Building Decision Tree (DT) Model from past Tenki and HEMS data
   1. [X] Make Decision Table
     * [] SettingTemp
     * [] TotalUsage
@@ -9,8 +9,11 @@
   2. [X] Make Decision Tree
 
 2. Decide to deliver the contents using the DT Model and the today's Tenki data
-  1. [] Get the today's Tenki data
-  1. [] Give the decision flags
+  1. [X] Get the today's Tenki data
+  2. [] Give the decision flags
+    * [] SettingTemp
+    * [] TotalUsage
+    * [X] ChangeUsage
 '''
 
 from . import utils
@@ -136,10 +139,19 @@ class RecommnedationDecisionTree:
         """
         self.test_X_list = utils.ret_predicted_outer_data_list(OWM_API_KEY)
 
-    def ret_decision_flags(self):
+    def ret_predicted_Y_int(self):
+        # set self.test_X_list
+        OWM_API_KEY = utils.ret_OWM_API_KEY()
+        self.get_test_X_list(OWM_API_KEY)
+
         # convert ndarray
         test_x = [self.test_X_list]
         test_X = utils.be_ndarray(test_x)
 
         # Predict the Y label
         pred_Y = self.clf.predict(test_X)
+
+        # convert pred_Y to int type
+        pred_y = int(pred_Y[0])
+
+        return pred_y

@@ -1,3 +1,4 @@
+import os
 from datetime import datetime as dt
 from datetime import timedelta as delta
 
@@ -8,6 +9,12 @@ import pyowm
 
 from tenkishocho import DayPerMonthTenki
 
+
+def ret_OWM_API_KEY():
+    api = os.getenv('OWM_API_KEY')
+    if not api:
+        raise Exception('OWM_API_KEY not found')
+    return api
 
 def is_rain_or_not(char):
     '''

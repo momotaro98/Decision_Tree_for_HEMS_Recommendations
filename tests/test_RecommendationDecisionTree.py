@@ -2,11 +2,10 @@
 
 import unittest
 
-import os
 import csv
 from datetime import datetime as dt
 
-from decision_tree_for_hems_recommendations import RecommnedationDecisionTree
+from decision_tree_for_hems_recommendations import RecommnedationDecisionTree, utils
 
 CSVFILE_PATH = "tests/test.csv"
 
@@ -133,7 +132,11 @@ class RecommnedationDecisionTreeTestCase(unittest.TestCase):
         self.assertEqual(y[3], 0)
 
     def test_get_test_X_list(self):
-        OWM_API_KEY = os.getenv('OWM_API_KEY')
+        OWM_API_KEY = utils.ret_OWM_API_KEY()
         self.rDT.get_test_X_list(OWM_API_KEY)
         dlist = self.rDT.test_X_list
         self.assertEqual(len(dlist), 5)
+
+    def test_ret_predicted_Y_int(self):
+        pred_y = self.rDT.ret_predicted_Y_int()
+        self.assertIn(pred_y, [0, 1])
