@@ -9,7 +9,7 @@ from datetime import date
 from decision_tree_for_hems_recommendations import (
     utils,
     RecommnedationDecisionTree,
-    TotalUsageDT, ChangeUsageDT,
+    SettingTempDT, TotalUsageDT, ChangeUsageDT,
 )
 
 CSVFILE_PATH = "tests/test.csv"
@@ -47,39 +47,61 @@ class RowData:
             if user_id else user_id
 
 
+def ret_start_train_dt():
+    start_train_dt =  datetime(2016, 8, 2)
+    return start_train_dt
+
+
+def ret_end_train_dt():
+    end_train_dt =  datetime(2016, 9, 18)
+    return end_train_dt
+
+
+def ret_ac_logs_list():
+    ac_logs_list = []
+    # 本来はstart_train_dt, end_train_dtの条件でデータのクエリゲット
+    with open(CSVFILE_PATH) as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            ac_logs_list.append(
+                RowData(
+                    timestamp=row['timestamp'],
+                    on_off=row['on_off'],
+                    operating=row['operating'],
+                    set_temperature=row['set_temperature'],
+                    wind=row['wind'],
+                    indoor_temperature=row['indoor_temperature'],
+                    indoor_pressure=row['indoor_temperature'],
+                    indoor_humidity=row['indoor_humidity'],
+                    operate_ipaddress=row['operate_ipaddress'],
+                    user_id=row['user_id'],
+                )
+            )
+    return ac_logs_list
+
+
+def ret_target_hour():
+    target_hour = 10
+    return target_hour
+
+
 class RecommnedationDecisionTreeTestCase(unittest.TestCase):
     def setUp(self):
+        # *** Prepare Input Variables ***
         # prepare start_train_dt
-        start_train_dt = datetime(2016, 8, 2)
+        start_train_dt = ret_start_train_dt()
+
         # prepare end_train_dt
-        end_train_dt = datetime(2016, 9, 18)
-        # define data_list_num
-        self.data_list_num = 48  # 2016-08-02 -> 2016-09-18 kikan
+        end_train_dt = ret_end_train_dt()
 
         # prepare ac_logs_list
-        ac_logs_list = []
-        # 本来はstart_train_dt, end_train_dtの条件でデータのクエリゲット
-        with open(CSVFILE_PATH) as csvfile:
-            reader = csv.DictReader(csvfile)
-            for row in reader:
-                ac_logs_list.append(
-                    RowData(
-                        timestamp=row['timestamp'],
-                        on_off=row['on_off'],
-                        operating=row['operating'],
-                        set_temperature=row['set_temperature'],
-                        wind=row['wind'],
-                        indoor_temperature=row['indoor_temperature'],
-                        indoor_pressure=row['indoor_temperature'],
-                        indoor_humidity=row['indoor_humidity'],
-                        operate_ipaddress=row['operate_ipaddress'],
-                        user_id=row['user_id'],
-                    )
-                )
+        ac_logs_list = ret_ac_logs_list()
 
         # prepare target_hour
-        target_hour = 10
+        target_hour = ret_target_hour()
 
+        # *** Set Test Case Class Instance variables ***
+        self.data_list_num = 48  # 2016-08-02 -> 2016-09-18 kikan
         # Instanciate RecommnedationDecisionTree
         self.rDT = RecommnedationDecisionTree(
             start_train_dt=start_train_dt,
@@ -150,39 +172,40 @@ class RecommnedationDecisionTreeTestCase(unittest.TestCase):
         self.assertIn(pred_y, [0, 1])  # 予測値pred_yが0または1であるかを確認
 
 
+class SettingTempDTTestCase(unittest.TestCase):
+    def test_Y_data_list(self):
+        '''
+        dlist = self.rDT.train_Y_list
+
+        # length
+        self.assertEqual(len(dlist), self.data_list_num)
+
+        # is_done
+        self.assertEqual(dlist[0][1], 0)
+        self.assertEqual(dlist[1][1], 1)
+        self.assertEqual(dlist[2][1], 1)
+        self.assertEqual(dlist[3][1], 1)
+        '''
+        pass
+
+
 class TotalUsageDTTestCase(unittest.TestCase):
     def setUp(self):
+        # *** Prepare Input Variables ***
         # prepare start_train_dt
-        start_train_dt = datetime(2016, 8, 2)
+        start_train_dt = ret_start_train_dt()
+
         # prepare end_train_dt
-        end_train_dt = datetime(2016, 9, 18)
-        # define data_list_num
-        self.data_list_num = 48  # 2016-08-02 -> 2016-09-18 kikan
+        end_train_dt = ret_end_train_dt()
 
         # prepare ac_logs_list
-        ac_logs_list = []
-        # 本来はstart_train_dt, end_train_dtの条件でデータのクエリゲット
-        with open(CSVFILE_PATH) as csvfile:
-            reader = csv.DictReader(csvfile)
-            for row in reader:
-                ac_logs_list.append(
-                    RowData(
-                        timestamp=row['timestamp'],
-                        on_off=row['on_off'],
-                        operating=row['operating'],
-                        set_temperature=row['set_temperature'],
-                        wind=row['wind'],
-                        indoor_temperature=row['indoor_temperature'],
-                        indoor_pressure=row['indoor_temperature'],
-                        indoor_humidity=row['indoor_humidity'],
-                        operate_ipaddress=row['operate_ipaddress'],
-                        user_id=row['user_id'],
-                    )
-                )
+        ac_logs_list = ret_ac_logs_list()
 
         # prepare target_hour
-        target_hour = 10
+        target_hour = ret_target_hour()
 
+        # *** Set Test Case Class Instance variables ***
+        self.data_list_num = 48  # 2016-08-02 -> 2016-09-18 kikan
         # Instanciate RecommnedationDecisionTree
         self.rDT = TotalUsageDT(
             start_train_dt=start_train_dt,
@@ -221,37 +244,21 @@ class TotalUsageDTTestCase(unittest.TestCase):
 
 class ChangeUsageDTTestCase(unittest.TestCase):
     def setUp(self):
+        # *** Prepare Input Variables ***
         # prepare start_train_dt
-        start_train_dt = datetime(2016, 8, 2)
+        start_train_dt = ret_start_train_dt()
+
         # prepare end_train_dt
-        end_train_dt = datetime(2016, 9, 18)
-        # define data_list_num
-        self.data_list_num = 48  # 2016-08-02 -> 2016-09-18 kikan
+        end_train_dt = ret_end_train_dt()
 
         # prepare ac_logs_list
-        ac_logs_list = []
-        # 本来はstart_train_dt, end_train_dtの条件でデータのクエリゲット
-        with open(CSVFILE_PATH) as csvfile:
-            reader = csv.DictReader(csvfile)
-            for row in reader:
-                ac_logs_list.append(
-                    RowData(
-                        timestamp=row['timestamp'],
-                        on_off=row['on_off'],
-                        operating=row['operating'],
-                        set_temperature=row['set_temperature'],
-                        wind=row['wind'],
-                        indoor_temperature=row['indoor_temperature'],
-                        indoor_pressure=row['indoor_temperature'],
-                        indoor_humidity=row['indoor_humidity'],
-                        operate_ipaddress=row['operate_ipaddress'],
-                        user_id=row['user_id'],
-                    )
-                )
+        ac_logs_list = ret_ac_logs_list()
 
         # prepare target_hour
-        target_hour = 10
+        target_hour = ret_target_hour()
 
+        # *** Set Test Case Class Instance variables ***
+        self.data_list_num = 48  # 2016-08-02 -> 2016-09-18 kikan
         # Instanciate RecommnedationDecisionTree
         self.rDT = ChangeUsageDT(
             start_train_dt=start_train_dt,
