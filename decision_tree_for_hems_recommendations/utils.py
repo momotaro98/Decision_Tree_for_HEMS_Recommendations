@@ -223,3 +223,18 @@ def ret_predicted_outer_data_list(OWM_API_KEY, target_date=dt.now().date()):
     ret_list = [weekday, temp_max, temp_min, humidity_ave, tenki]
 
     return ret_list
+
+
+def make_delta_hour(start_dt, end_dt=dt.now()):
+    """
+    >>> start_dt = dt(2016, 4, 1, 10, 40, 0)
+    >>> end_dt = dt(2016, 4, 1, 15, 40, 0)
+    >>> make_delta_hour(start_dt, end_dt)
+    5.0
+    """
+    delta_seconds = (end_dt - start_dt).seconds
+    return round((delta_seconds // 60) / 60, 1)
+
+
+def make_days_last_timestamp(the_time=dt.now()):
+    return dt(the_time.year, the_time.month, the_time.day, 23, 59, 59)

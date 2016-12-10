@@ -155,3 +155,185 @@ class RecommnedationDecisionTree:
         pred_y = int(pred_Y[0])
 
         return pred_y
+
+
+class SettingTempDT(RecommnedationDecisionTree):
+    pass
+
+
+class TotalUsageDT(RecommnedationDecisionTree):
+    def _ret_target_usage_hour(self):
+        '''
+        (全期間合計エアコン利用時間 / 総日数) - 2
+        を目標値とする
+        '''
+        # 総日数 total_days
+        total_days = (self.end_train_dt - self.start_train_dt).days + 1
+        print('total_days')
+        print(total_days)
+
+        # 全期間合計エアコン利用時間 total_usage_hour
+        total_usage_hour = 0
+        on_operationg_flag = False
+        for row in self.ac_logs_list:
+            if row.on_off == "on" and not on_operationg_flag:
+                on_operationg_flag = True
+                on_timestamp = row.timestamp
+            elif row.on_off == "off" and on_operationg_flag:
+                on_operationg_flag = False
+                off_timestamp = row.timestamp
+                # Event happens when switching on->off
+                total_usage_hour += utils.make_delta_hour(
+                    on_timestamp, off_timestamp)
+        # 最終日の日付越えてもonであったとき
+        if on_operationg_flag:
+            days_last_timestamp = utils.make_days_last_timestamp(on_timestamp)
+            total_usage_hour += utils.make_delta_hour(
+                on_timestamp, days_last_timestamp)
+        print('total_usage_hour')
+        print(total_usage_hour)
+
+        # 目標値 target_usage_hour
+        target_usage_hour = (total_usage_hour / total_days) - 2.0
+
+        return target_usage_hour
+
+    def _ret_datetime_value_list(self):
+        '''
+        ret_list
+        [
+            [datetime(2016, 7, 1), 3.2],
+            [datetime(2016, 7, 2), 2.4],
+            .
+            .
+            .
+            [datetime(2016, 8, 15), 4.5]
+        ]
+        '''
+        date_list = utils.ret_date_list(self.start_train_dt, self.end_train_dt)
+        dt_value_dict = {d: 0 for d in date_list}
+        # ac_logs_list foreach start
+        on_operationg_flag = False
+        for row in self.ac_logs_list:
+            if row.on_off == "on" and not on_operationg_flag:
+                on_operationg_flag = True
+                on_timestamp = row.timestamp
+            elif row.on_off == "off" and on_operationg_flag:
+                on_operationg_flag = False
+                off_timestamp = row.timestamp
+                # Event happens when switching on->off
+                dt_value_dict[on_timestamp.date()] += \
+                    utils.make_delta_hour(on_timestamp, off_timestamp)
+        # 最終日の日付越えてもonであったとき
+        if on_operationg_flag:
+            days_last_timestamp = utils.make_days_last_timestamp(on_timestamp)
+            dt_value_dict[on_timestamp.date()] += \
+                utils.make_delta_hour(on_timestamp, days_last_timestamp)
+        ret_list = [
+            [d, v] for d, v in sorted(dt_value_dict.items(), key=lambda x:x[0])
+        ]
+        return ret_list
+
+    def _ret_train_Y_list(self):
+        '''
+        Y data (label data) is HEMS data
+
+        example list to make
+        [
+          [datetime(2016, 7, 1), 0]
+          [datetime(2016, 7, 2), 1]
+          .
+          .
+          .
+          [datetime(2016, 8, 15), 1]
+        ]
+
+        columns
+        [date_list, is_done_list]
+        '''
+
+        """
+        # *** 目標値設定 ***
+        # target_usage_hour を決定する
+        target_usage_hour = self._ret_target_usage_hour()
+
+        # &&& 日付・値 辞書取得 &&&
+        datetime_value_list = self._ret_datetime_value_list()
+
+        # ^^^ 返すラベル生成 ^^^
+        """
+
+        # FOR TEST
+        date_list = utils.ret_date_list(self.start_train_dt, self.end_train_dt)
+        ret_list = [[dt, 0] for dt in date_list]
+        last_1label_index = 0
+        on_operationg_flag = False
+        for row in self.ac_logs_list:
+            if row.on_off == "on" and not on_operationg_flag:
+                on_operationg_flag = True
+                on_timestamp = row.timestamp
+            elif row.on_off == "off" and on_operationg_flag:
+                on_operationg_flag = False
+                off_timestamp = row.timestamp
+                # Event happens when switching on->off
+                if on_timestamp.hour <= self.target_hour <= off_timestamp.hour:
+                    # Get the list index
+                    last_1label_index = date_list.index(on_timestamp.date())
+                    # 対象時刻にonであった日付インデックスを1にする
+                    ret_list[last_1label_index][1] = 1
+        # 最終日の日付越えてもonであったとき
+        if on_operationg_flag:
+            if on_timestamp.hour <= self.target_hour <= 23:
+                # Get the list index
+                last_1label_index = date_list.index(on_timestamp.date())
+                # 対象時刻にonであった日付インデックスを1にする
+                ret_list[last_1label_index][1] = 1
+        return ret_list
+
+
+"""
+class ChangeUsageDT(RecommnedationDecisionTree):
+    def _ret_train_Y_list(self):
+        '''
+        Y data (label data) is HEMS data
+
+        example list to make
+        [
+          [datetime(2016, 7, 1), 0]
+          [datetime(2016, 7, 2), 1]
+          .
+          .
+          .
+          [datetime(2016, 8, 15), 1]
+        ]
+
+        columns
+        [date_list, is_done_list]
+        '''
+        date_list = utils.ret_date_list(self.start_train_dt, self.end_train_dt)
+        ret_list = [[dt, 0] for dt in date_list]
+
+        last_1label_index = 0
+        on_operationg_flag = False
+        for row in self.ac_logs_list:
+            if row.on_off == "on" and not on_operationg_flag:
+                on_operationg_flag = True
+                on_timestamp = row.timestamp
+            elif row.on_off == "off" and on_operationg_flag:
+                on_operationg_flag = False
+                off_timestamp = row.timestamp
+                # Event happens when switching on->off
+                if on_timestamp.hour <= self.target_hour <= off_timestamp.hour:
+                    # Get the list index
+                    last_1label_index = date_list.index(on_timestamp.date())
+                    # 対象時刻にonであった日付インデックスを1にする
+                    ret_list[last_1label_index][1] = 1
+        # 最終日の日付越えてもonであったとき
+        if on_operationg_flag:
+            if on_timestamp.hour <= self.target_hour <= 23:
+                # Get the list index
+                last_1label_index = date_list.index(on_timestamp.date())
+                # 対象時刻にonであった日付インデックスを1にする
+                ret_list[last_1label_index][1] = 1
+        return ret_list
+"""

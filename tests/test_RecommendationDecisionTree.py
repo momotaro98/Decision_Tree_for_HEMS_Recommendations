@@ -3,9 +3,12 @@
 import unittest
 
 import csv
-from datetime import datetime as dt
+from datetime import datetime
+from datetime import date
 
-from decision_tree_for_hems_recommendations import RecommnedationDecisionTree, utils
+from decision_tree_for_hems_recommendations import (
+    RecommnedationDecisionTree, TotalUsageDT, utils
+)
 
 CSVFILE_PATH = "tests/test.csv"
 
@@ -24,7 +27,7 @@ class RowData:
                  indoor_humidity=None, operate_ipaddress=None,
                  user_id=None):
 
-        self.timestamp = dt.strptime(timestamp, '%Y-%m-%d %H:%M:%S')
+        self.timestamp = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S')
         self.on_off = str(on_off) if on_off else on_off
         self.operating = str(operating) if operating else operating
         self.set_temperature = int(set_temperature) \
@@ -45,9 +48,9 @@ class RowData:
 class RecommnedationDecisionTreeTestCase(unittest.TestCase):
     def setUp(self):
         # prepare start_train_dt
-        start_train_dt = dt(2016, 8, 2)
+        start_train_dt = datetime(2016, 8, 2)
         # prepare end_train_dt
-        end_train_dt = dt(2016, 9, 18)
+        end_train_dt = datetime(2016, 9, 18)
         # define data_list_num
         self.data_list_num = 48  # 2016-08-02 -> 2016-09-18 kikan
 
@@ -84,8 +87,8 @@ class RecommnedationDecisionTreeTestCase(unittest.TestCase):
         )
 
     def test_basic_instanciation(self):
-        self.assertEqual(self.rDT.start_train_dt, dt(2016, 8, 2))
-        self.assertEqual(self.rDT.end_train_dt, dt(2016, 9, 18))
+        self.assertEqual(self.rDT.start_train_dt, datetime(2016, 8, 2))
+        self.assertEqual(self.rDT.end_train_dt, datetime(2016, 9, 18))
         self.assertEqual(self.rDT.target_hour, 10)
 
     def test_X_data_list(self):
@@ -140,3 +143,55 @@ class RecommnedationDecisionTreeTestCase(unittest.TestCase):
     def test_ret_predicted_Y_int(self):
         pred_y = self.rDT.ret_predicted_Y_int()
         self.assertIn(pred_y, [0, 1])
+
+
+class TotalUsageDTTestCase(unittest.TestCase):
+    def setUp(self):
+        # prepare start_train_dt
+        start_train_dt = datetime(2016, 8, 2)
+        # prepare end_train_dt
+        end_train_dt = datetime(2016, 9, 18)
+        # define data_list_num
+        self.data_list_num = 48  # 2016-08-02 -> 2016-09-18 kikan
+
+        # prepare ac_logs_list
+        ac_logs_list = []
+        # 本来はstart_train_dt, end_train_dtの条件でデータのクエリゲット
+        with open(CSVFILE_PATH) as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                ac_logs_list.append(
+                    RowData(
+                        timestamp=row['timestamp'],
+                        on_off=row['on_off'],
+                        operating=row['operating'],
+                        set_temperature=row['set_temperature'],
+                        wind=row['wind'],
+                        indoor_temperature=row['indoor_temperature'],
+                        indoor_pressure=row['indoor_temperature'],
+                        indoor_humidity=row['indoor_humidity'],
+                        operate_ipaddress=row['operate_ipaddress'],
+                        user_id=row['user_id'],
+                    )
+                )
+
+        # prepare target_hour
+        target_hour = 10
+
+        # Instanciate RecommnedationDecisionTree
+        self.rDT = TotalUsageDT(
+            start_train_dt=start_train_dt,
+            end_train_dt=end_train_dt,
+            ac_logs_list=ac_logs_list,
+            target_hour=target_hour,
+        )
+
+    def test__ret_target_usage_hour(self):
+        target_usage_hour = self.rDT._ret_target_usage_hour()
+        self.assertIsInstance(target_usage_hour, float)
+
+    def test__ret_datetime_value_list(self):
+        datetime_value_list = self.rDT._ret_datetime_value_list()
+        self.assertEqual(len(datetime_value_list), self.data_list_num)
+        self.assertEqual(datetime_value_list[0][0], date(2016, 8, 2))
+        self.assertEqual(datetime_value_list[1][0], date(2016, 8, 3))
