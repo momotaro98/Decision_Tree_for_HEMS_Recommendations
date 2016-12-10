@@ -192,6 +192,23 @@ class TotalUsageDTTestCase(unittest.TestCase):
 
     def test__ret_datetime_value_list(self):
         datetime_value_list = self.rDT._ret_datetime_value_list()
+
+        # length
         self.assertEqual(len(datetime_value_list), self.data_list_num)
+        self.assertEqual(len(datetime_value_list[0]), 2)
+
+        # value
         self.assertEqual(datetime_value_list[0][0], date(2016, 8, 2))
         self.assertEqual(datetime_value_list[1][0], date(2016, 8, 3))
+
+    def test_Y_data_list(self):
+        dlist = self.rDT.train_Y_list
+
+        # length
+        self.assertEqual(len(dlist), self.data_list_num)
+
+        # is_done
+        self.assertEqual(dlist[0][1], 0)
+        self.assertEqual(dlist[1][1], 1)
+        self.assertEqual(dlist[2][1], 1)
+        self.assertEqual(dlist[3][1], 1)

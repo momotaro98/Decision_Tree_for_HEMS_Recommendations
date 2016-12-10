@@ -169,8 +169,6 @@ class TotalUsageDT(RecommnedationDecisionTree):
         '''
         # 総日数 total_days
         total_days = (self.end_train_dt - self.start_train_dt).days + 1
-        print('total_days')
-        print(total_days)
 
         # 全期間合計エアコン利用時間 total_usage_hour
         total_usage_hour = 0
@@ -190,8 +188,6 @@ class TotalUsageDT(RecommnedationDecisionTree):
             days_last_timestamp = utils.make_days_last_timestamp(on_timestamp)
             total_usage_hour += utils.make_delta_hour(
                 on_timestamp, days_last_timestamp)
-        print('total_usage_hour')
-        print(total_usage_hour)
 
         # 目標値 target_usage_hour
         target_usage_hour = (total_usage_hour / total_days) - 2.0
@@ -252,7 +248,6 @@ class TotalUsageDT(RecommnedationDecisionTree):
         [date_list, is_done_list]
         '''
 
-        """
         # *** 目標値設定 ***
         # target_usage_hour を決定する
         target_usage_hour = self._ret_target_usage_hour()
@@ -261,33 +256,16 @@ class TotalUsageDT(RecommnedationDecisionTree):
         datetime_value_list = self._ret_datetime_value_list()
 
         # ^^^ 返すラベル生成 ^^^
-        """
-
-        # FOR TEST
-        date_list = utils.ret_date_list(self.start_train_dt, self.end_train_dt)
-        ret_list = [[dt, 0] for dt in date_list]
-        last_1label_index = 0
-        on_operationg_flag = False
-        for row in self.ac_logs_list:
-            if row.on_off == "on" and not on_operationg_flag:
-                on_operationg_flag = True
-                on_timestamp = row.timestamp
-            elif row.on_off == "off" and on_operationg_flag:
-                on_operationg_flag = False
-                off_timestamp = row.timestamp
-                # Event happens when switching on->off
-                if on_timestamp.hour <= self.target_hour <= off_timestamp.hour:
-                    # Get the list index
-                    last_1label_index = date_list.index(on_timestamp.date())
-                    # 対象時刻にonであった日付インデックスを1にする
-                    ret_list[last_1label_index][1] = 1
-        # 最終日の日付越えてもonであったとき
-        if on_operationg_flag:
-            if on_timestamp.hour <= self.target_hour <= 23:
-                # Get the list index
-                last_1label_index = date_list.index(on_timestamp.date())
-                # 対象時刻にonであった日付インデックスを1にする
-                ret_list[last_1label_index][1] = 1
+        ret_list = []
+        for d_v_list in datetime_value_list:
+            dt = d_v_list[0]
+            value = d_v_list[1]
+            # "レコメンドを送る必要がある日"を1にする
+            # 目標値より大きい値のとき1にする
+            if value > target_usage_hour:
+                ret_list.append([dt, 1])
+                continue
+            ret_list.append([dt, 0])
         return ret_list
 
 
@@ -327,6 +305,7 @@ class ChangeUsageDT(RecommnedationDecisionTree):
                     # Get the list index
                     last_1label_index = date_list.index(on_timestamp.date())
                     # 対象時刻にonであった日付インデックスを1にする
+                    # つまり、"レコメンドを送る必要がある日"を1にする
                     ret_list[last_1label_index][1] = 1
         # 最終日の日付越えてもonであったとき
         if on_operationg_flag:
