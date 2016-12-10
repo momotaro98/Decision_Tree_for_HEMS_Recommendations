@@ -4,7 +4,7 @@
 1. Building Decision Tree (DT) Model from past Tenki and HEMS data
   1. [X] Make Decision Table
     * [] SettingTemp
-    * [] TotalUsage
+    * [X] TotalUsage
     * [X] ChangeUsage
   2. [X] Make Decision Tree
 
@@ -12,7 +12,7 @@
   1. [X] Get the today's Tenki data
   2. [] Give the decision flags
     * [] SettingTemp
-    * [] TotalUsage
+    * [X] TotalUsage
     * [X] ChangeUsage
 '''
 
@@ -62,12 +62,15 @@ class RecommnedationDecisionTree:
 
     def _ret_train_Y_list(self):
         '''
+        Abstract Method
+        Each Children Class must implement this method.
+
         Y data (label data) is HEMS data
 
         example list to make
         [
-          [datetime(2016, 7, 1), 0]
-          [datetime(2016, 7, 2), 1]
+          [datetime(2016, 7, 1), 0],
+          [datetime(2016, 7, 2), 1],
           .
           .
           .
@@ -79,28 +82,6 @@ class RecommnedationDecisionTree:
         '''
         date_list = utils.ret_date_list(self.start_train_dt, self.end_train_dt)
         ret_list = [[dt, 0] for dt in date_list]
-        last_1label_index = 0
-        on_operationg_flag = False
-        for row in self.ac_logs_list:
-            if row.on_off == "on" and not on_operationg_flag:
-                on_operationg_flag = True
-                on_timestamp = row.timestamp
-            elif row.on_off == "off" and on_operationg_flag:
-                on_operationg_flag = False
-                off_timestamp = row.timestamp
-                # Event happens when switching on->off
-                if on_timestamp.hour <= self.target_hour <= off_timestamp.hour:
-                    # Get the list index
-                    last_1label_index = date_list.index(on_timestamp.date())
-                    # 対象時刻にonであった日付インデックスを1にする
-                    ret_list[last_1label_index][1] = 1
-        # 最終日の日付越えてもonであったとき
-        if on_operationg_flag:
-            if on_timestamp.hour <= self.target_hour <= 23:
-                # Get the list index
-                last_1label_index = date_list.index(on_timestamp.date())
-                # 対象時刻にonであった日付インデックスを1にする
-                ret_list[last_1label_index][1] = 1
         return ret_list
 
     def _ret_decision_table(self):
@@ -158,7 +139,8 @@ class RecommnedationDecisionTree:
 
 
 class SettingTempDT(RecommnedationDecisionTree):
-    pass
+    def _ret_train_Y_list(self):
+        pass
 
 
 class TotalUsageDT(RecommnedationDecisionTree):
@@ -236,8 +218,8 @@ class TotalUsageDT(RecommnedationDecisionTree):
 
         example list to make
         [
-          [datetime(2016, 7, 1), 0]
-          [datetime(2016, 7, 2), 1]
+          [datetime(2016, 7, 1), 0],
+          [datetime(2016, 7, 2), 1],
           .
           .
           .
@@ -269,7 +251,6 @@ class TotalUsageDT(RecommnedationDecisionTree):
         return ret_list
 
 
-"""
 class ChangeUsageDT(RecommnedationDecisionTree):
     def _ret_train_Y_list(self):
         '''
@@ -277,8 +258,8 @@ class ChangeUsageDT(RecommnedationDecisionTree):
 
         example list to make
         [
-          [datetime(2016, 7, 1), 0]
-          [datetime(2016, 7, 2), 1]
+          [datetime(2016, 7, 1), 0],
+          [datetime(2016, 7, 2), 1],
           .
           .
           .
@@ -315,4 +296,3 @@ class ChangeUsageDT(RecommnedationDecisionTree):
                 # 対象時刻にonであった日付インデックスを1にする
                 ret_list[last_1label_index][1] = 1
         return ret_list
-"""

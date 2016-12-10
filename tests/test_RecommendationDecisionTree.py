@@ -7,7 +7,9 @@ from datetime import datetime
 from datetime import date
 
 from decision_tree_for_hems_recommendations import (
-    RecommnedationDecisionTree, TotalUsageDT, utils
+    utils,
+    RecommnedationDecisionTree,
+    TotalUsageDT, ChangeUsageDT,
 )
 
 CSVFILE_PATH = "tests/test.csv"
@@ -106,6 +108,9 @@ class RecommnedationDecisionTreeTestCase(unittest.TestCase):
         self.assertEqual(dlist[4][2], 34.2)
 
     def test_Y_data_list(self):
+        '''
+        Each Test Class must implement this 'test_Y_data_list' method
+        '''
         dlist = self.rDT.train_Y_list
 
         # length
@@ -114,7 +119,7 @@ class RecommnedationDecisionTreeTestCase(unittest.TestCase):
         # is_done
         self.assertEqual(dlist[0][1], 0)
         self.assertEqual(dlist[1][1], 0)
-        self.assertEqual(dlist[2][1], 1)
+        self.assertEqual(dlist[2][1], 0)
         self.assertEqual(dlist[3][1], 0)
 
     def test__ret_decision_table(self):
@@ -131,7 +136,7 @@ class RecommnedationDecisionTreeTestCase(unittest.TestCase):
         # y
         self.assertEqual(y[0], 0)
         self.assertEqual(y[1], 0)
-        self.assertEqual(y[2], 1)
+        self.assertEqual(y[2], 0)
         self.assertEqual(y[3], 0)
 
     def test_get_test_X_list(self):
@@ -142,7 +147,7 @@ class RecommnedationDecisionTreeTestCase(unittest.TestCase):
 
     def test_ret_predicted_Y_int(self):
         pred_y = self.rDT.ret_predicted_Y_int()
-        self.assertIn(pred_y, [0, 1])
+        self.assertIn(pred_y, [0, 1])  # 予測値pred_yが0または1であるかを確認
 
 
 class TotalUsageDTTestCase(unittest.TestCase):
@@ -212,3 +217,57 @@ class TotalUsageDTTestCase(unittest.TestCase):
         self.assertEqual(dlist[1][1], 1)
         self.assertEqual(dlist[2][1], 1)
         self.assertEqual(dlist[3][1], 1)
+
+
+class ChangeUsageDTTestCase(unittest.TestCase):
+    def setUp(self):
+        # prepare start_train_dt
+        start_train_dt = datetime(2016, 8, 2)
+        # prepare end_train_dt
+        end_train_dt = datetime(2016, 9, 18)
+        # define data_list_num
+        self.data_list_num = 48  # 2016-08-02 -> 2016-09-18 kikan
+
+        # prepare ac_logs_list
+        ac_logs_list = []
+        # 本来はstart_train_dt, end_train_dtの条件でデータのクエリゲット
+        with open(CSVFILE_PATH) as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                ac_logs_list.append(
+                    RowData(
+                        timestamp=row['timestamp'],
+                        on_off=row['on_off'],
+                        operating=row['operating'],
+                        set_temperature=row['set_temperature'],
+                        wind=row['wind'],
+                        indoor_temperature=row['indoor_temperature'],
+                        indoor_pressure=row['indoor_temperature'],
+                        indoor_humidity=row['indoor_humidity'],
+                        operate_ipaddress=row['operate_ipaddress'],
+                        user_id=row['user_id'],
+                    )
+                )
+
+        # prepare target_hour
+        target_hour = 10
+
+        # Instanciate RecommnedationDecisionTree
+        self.rDT = ChangeUsageDT(
+            start_train_dt=start_train_dt,
+            end_train_dt=end_train_dt,
+            ac_logs_list=ac_logs_list,
+            target_hour=target_hour,
+        )
+
+    def test_Y_data_list(self):
+        dlist = self.rDT.train_Y_list
+
+        # length
+        self.assertEqual(len(dlist), self.data_list_num)
+
+        # is_done
+        self.assertEqual(dlist[0][1], 0)
+        self.assertEqual(dlist[1][1], 0)
+        self.assertEqual(dlist[2][1], 1)
+        self.assertEqual(dlist[3][1], 0)
