@@ -3,15 +3,15 @@
 '''
 1. Building Decision Tree (DT) Model from past Tenki and HEMS data
   1. [X] Make Decision Table
-    * [] SettingTemp
+    * [X] SettingTemp
     * [X] TotalUsage
     * [X] ChangeUsage
   2. [X] Make Decision Tree
 
 2. Decide to deliver the contents using the DT Model and the today's Tenki data
   1. [X] Get the today's Tenki data
-  2. [] Give the decision flags
-    * [] SettingTemp
+  2. [X] Give the decision flags
+    * [X] SettingTemp
     * [X] TotalUsage
     * [X] ChangeUsage
 '''
@@ -206,7 +206,6 @@ class SettingTempDT(RecommnedationDecisionTree):
         ]
         return ret_list
 
-    """
     def _ret_train_Y_list(self):
         '''
         Y data (label data) is HEMS data
@@ -224,8 +223,41 @@ class SettingTempDT(RecommnedationDecisionTree):
         columns
         [date_list, is_done_list]
         '''
-        pass
-    """
+        # *** 目標値設定 ***
+        target_settemp = self._ret_target_settemp()
+
+        # &&& 日付・値 辞書取得 &&&
+        datetime_settemp_list = self._ret_datetime_settemp_list()
+
+        # ^^^ 返すラベル生成 ^^^
+        ret_list = []
+        for d_v_list in datetime_settemp_list:
+            dt = d_v_list[0]
+            value = d_v_list[1]
+            # valueがNoneの日付は、レコメンドを送る必要がないので、0
+            if value is None:
+                ret_list.append([dt, 0])
+                continue
+            # "レコメンドを送る必要がある日"を1にする
+            # 夏と冬で異なる
+            if self.target_season == 'sum':
+                # 夏は設定温度が目標温度よりも'低い'とき、送る必要がある
+                if value < target_settemp:
+                    ret_list.append([dt, 1])
+                    continue
+                ret_list.append([dt, 0])
+            elif self.target_season == 'win':
+                # 冬は設定温度が目標温度よりも'高い'とき、送る必要がある
+                if value > target_settemp:
+                    ret_list.append([dt, 1])
+                    continue
+                ret_list.append([dt, 0])
+            else:
+                raise Exception(
+                    "target_season attribute must be set in ('sum', 'win')]"
+                )
+
+        return ret_list
 
 
 class TotalUsageDT(RecommnedationDecisionTree):

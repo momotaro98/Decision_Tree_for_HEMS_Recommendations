@@ -82,9 +82,9 @@ def ret_ac_logs_list():
 
 def ret_target_season():
     # target_season = 'spr'
-    # target_season = 'sum'
+    target_season = 'sum'
     # target_season = 'fal'
-    target_season = 'win'
+    # target_season = 'win'
     return target_season
 
 
@@ -151,10 +151,11 @@ class RecommnedationDecisionTreeTestCase(unittest.TestCase):
         self.assertEqual(len(dlist), self.data_list_num)
 
         # is_done
-        self.assertEqual(dlist[0][1], 0)
-        self.assertEqual(dlist[1][1], 0)
-        self.assertEqual(dlist[2][1], 0)
-        self.assertEqual(dlist[3][1], 0)
+        self.assertEqual(dlist[0][1], 0)  # Matsuoka_taku 2016-08-02
+        self.assertEqual(dlist[1][1], 0)  # Matsuoka_taku 2016-08-03
+        self.assertEqual(dlist[2][1], 0)  # Matsuoka_taku 2016-08-04
+        self.assertEqual(dlist[3][1], 0)  # Matsuoka_taku 2016-08-05
+
 
     def test__ret_decision_table(self):
         x, y = self.rDT._ret_decision_table()
@@ -215,7 +216,7 @@ class SettingTempDTTestCase(unittest.TestCase):
 
     def test__ret_target_settemp(self):
         target_settemp = self.rDT._ret_target_settemp()
-        self.assertEqual(target_settemp, 24)
+        self.assertEqual(target_settemp, 28)
 
     def test__ret_datetime_settemp_list(self):
         datetime_settemp_list = self.rDT._ret_datetime_settemp_list()
@@ -226,22 +227,18 @@ class SettingTempDTTestCase(unittest.TestCase):
         # value
         self.assertEqual(datetime_settemp_list[0][1], 25)
 
-    """
     def test_Y_data_list(self):
-        '''
         dlist = self.rDT.train_Y_list
 
         # length
         self.assertEqual(len(dlist), self.data_list_num)
 
         # is_done
-        self.assertEqual(dlist[0][1], 0)
-        self.assertEqual(dlist[1][1], 1)
-        self.assertEqual(dlist[2][1], 1)
-        self.assertEqual(dlist[3][1], 1)
-        '''
-        pass
-    """
+        self.assertEqual(dlist[0][1], 1)  # Matsuoka_taku 2016-08-02
+        self.assertEqual(dlist[1][1], 1)  # Matsuoka_taku 2016-08-03
+        self.assertEqual(dlist[2][1], 1)  # Matsuoka_taku 2016-08-04
+        self.assertEqual(dlist[3][1], 1)  # Matsuoka_taku 2016-08-05
+        self.assertEqual(dlist[11][1], 0)  # Matsuoka_taku 2016-08-13
 
 
 class TotalUsageDTTestCase(unittest.TestCase):
@@ -295,10 +292,10 @@ class TotalUsageDTTestCase(unittest.TestCase):
         self.assertEqual(len(dlist), self.data_list_num)
 
         # is_done
-        self.assertEqual(dlist[0][1], 0)
-        self.assertEqual(dlist[1][1], 1)
-        self.assertEqual(dlist[2][1], 1)
-        self.assertEqual(dlist[3][1], 1)
+        self.assertEqual(dlist[0][1], 0)  # Matsuoka_taku 2016-08-02
+        self.assertEqual(dlist[1][1], 1)  # Matsuoka_taku 2016-08-03
+        self.assertEqual(dlist[2][1], 1)  # Matsuoka_taku 2016-08-04
+        self.assertEqual(dlist[3][1], 1)  # Matsuoka_taku 2016-08-05
 
 
 class ChangeUsageDTTestCase(unittest.TestCase):
@@ -337,7 +334,7 @@ class ChangeUsageDTTestCase(unittest.TestCase):
         self.assertEqual(len(dlist), self.data_list_num)
 
         # is_done
-        self.assertEqual(dlist[0][1], 0)
-        self.assertEqual(dlist[1][1], 0)
-        self.assertEqual(dlist[2][1], 1)
-        self.assertEqual(dlist[3][1], 0)
+        self.assertEqual(dlist[0][1], 0)  # Make 2016-08-02
+        self.assertEqual(dlist[1][1], 0)  # Make 2016-08-03
+        self.assertEqual(dlist[2][1], 1)  # Make 2016-08-04
+        self.assertEqual(dlist[3][1], 0)  # Make 2016-08-05
