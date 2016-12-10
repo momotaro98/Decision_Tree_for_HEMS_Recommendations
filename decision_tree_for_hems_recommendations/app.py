@@ -25,6 +25,7 @@ class RecommnedationDecisionTree:
         self.start_train_dt = start_train_dt
         self.end_train_dt = end_train_dt
         self.ac_logs_list = ac_logs_list
+        self.target_season = target_season
         self.target_hour = target_hour
 
         # TODO: インスタンス化でどこまでデータを整えるか
@@ -141,12 +142,71 @@ class RecommnedationDecisionTree:
 class SettingTempDT(RecommnedationDecisionTree):
     def _ret_target_settemp(self):
         '''
-        (全ての行分の設定温度)
+        target_settemp
+        最も割合の多かった設定温度 - 2
+        or
+        夏ならば28℃
+        冬ならば20℃
         '''
+        # set settemp_count_dict
+        settemp_count_dict = {settemp: 0 for settemp in range(16, 33)}
+        for row in self.ac_logs_list:
+            try:
+                settemp_count_dict[row.set_temperature] += 1
+            except KeyError:
+                continue
+
+        # settemp_count_dictの最大カウントの設定温度を取得 most_frequent_settemp
+        most_frequent_settemp = max(
+            settemp_count_dict.items(), key=lambda x:x[1])[0]
+
+        # set target_settemp
+        if self.target_season == 'sum':
+            target_settemp = min(most_frequent_settemp + 2, 28)
+        elif self.target_season == 'win':
+            target_settemp = max(most_frequent_settemp - 2, 20)
+        else:
+            raise Exception("target_season attribute must be set in ('sum', 'win')]")
+        return target_settemp
 
     def _ret_datetime_settemp_list(self):
-        pass
+        '''
+        ret_list
+        [
+            [datetime(2016, 7, 1), 25],
+            [datetime(2016, 7, 2), None],
+            .
+            .
+            .
+            [datetime(2016, 8, 15), 24]
+        ]
+        '''
+        date_list = utils.ret_date_list(self.start_train_dt, self.end_train_dt)
+        dt_settemplist_dict = {d: [] for d in date_list}
+        # ac_logs_list foreach start
+        # 日毎のリストに値を追加していく
+        for row in self.ac_logs_list:
+            row_date = row.timestamp.date()
+            dt_settemplist_dict[row_date].append(row.set_temperature)
+        # 日毎のリストの中央値をその日の再頻設定温度とする
+        dt_settemp_dict = {d: None for d in date_list}
+        for dt, settemp_list in dt_settemplist_dict.items():
+            # 空のリストはエスケープ
+            if not settemp_list:
+                continue
+	    # リストの中央値を算出 center_val # TODO: be utils???
+            try:
+                center_val = sorted(settemp_list)[len(settemp_list)//2]
+                dt_settemp_dict[dt] = center_val
+            except IndexError:
+                continue
 
+        ret_list = [
+            [d, v] for d, v in sorted(dt_settemp_dict.items(), key=lambda x:x[0])
+        ]
+        return ret_list
+
+    """
     def _ret_train_Y_list(self):
         '''
         Y data (label data) is HEMS data
@@ -165,6 +225,7 @@ class SettingTempDT(RecommnedationDecisionTree):
         [date_list, is_done_list]
         '''
         pass
+    """
 
 
 class TotalUsageDT(RecommnedationDecisionTree):

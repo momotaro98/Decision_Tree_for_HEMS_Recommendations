@@ -185,6 +185,48 @@ class RecommnedationDecisionTreeTestCase(unittest.TestCase):
 
 
 class SettingTempDTTestCase(unittest.TestCase):
+    def setUp(self):
+        # *** Prepare Input Variables ***
+        # prepare start_train_dt
+        start_train_dt = ret_start_train_dt()
+
+        # prepare end_train_dt
+        end_train_dt = ret_end_train_dt()
+
+        # prepare ac_logs_list
+        ac_logs_list = ret_ac_logs_list()
+
+        # prepare target_season
+        target_season = ret_target_season()
+
+        # prepare target_hour
+        target_hour = ret_target_hour()
+
+        # *** Set Test Case Class Instance variables ***
+        self.data_list_num = 48  # 2016-08-02 -> 2016-09-18 kikan
+        # Instanciate RecommnedationDecisionTree
+        self.rDT = SettingTempDT(
+            start_train_dt=start_train_dt,
+            end_train_dt=end_train_dt,
+            ac_logs_list=ac_logs_list,
+            target_season=target_season,
+            target_hour=target_hour,
+        )
+
+    def test__ret_target_settemp(self):
+        target_settemp = self.rDT._ret_target_settemp()
+        self.assertEqual(target_settemp, 24)
+
+    def test__ret_datetime_settemp_list(self):
+        datetime_settemp_list = self.rDT._ret_datetime_settemp_list()
+
+        # length
+        self.assertEqual(len(datetime_settemp_list), self.data_list_num)
+
+        # value
+        self.assertEqual(datetime_settemp_list[0][1], 25)
+
+    """
     def test_Y_data_list(self):
         '''
         dlist = self.rDT.train_Y_list
@@ -199,6 +241,7 @@ class SettingTempDTTestCase(unittest.TestCase):
         self.assertEqual(dlist[3][1], 1)
         '''
         pass
+    """
 
 
 class TotalUsageDTTestCase(unittest.TestCase):
