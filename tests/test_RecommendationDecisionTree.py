@@ -80,6 +80,14 @@ def ret_ac_logs_list():
     return ac_logs_list
 
 
+def ret_target_season():
+    # target_season = 'spr'
+    # target_season = 'sum'
+    # target_season = 'fal'
+    target_season = 'win'
+    return target_season
+
+
 def ret_target_hour():
     target_hour = 10
     return target_hour
@@ -97,6 +105,9 @@ class RecommnedationDecisionTreeTestCase(unittest.TestCase):
         # prepare ac_logs_list
         ac_logs_list = ret_ac_logs_list()
 
+        # prepare target_season
+        target_season = ret_target_season()
+
         # prepare target_hour
         target_hour = ret_target_hour()
 
@@ -107,6 +118,7 @@ class RecommnedationDecisionTreeTestCase(unittest.TestCase):
             start_train_dt=start_train_dt,
             end_train_dt=end_train_dt,
             ac_logs_list=ac_logs_list,
+            target_season=target_season,
             target_hour=target_hour,
         )
 
@@ -201,6 +213,9 @@ class TotalUsageDTTestCase(unittest.TestCase):
         # prepare ac_logs_list
         ac_logs_list = ret_ac_logs_list()
 
+        # prepare target_season
+        target_season = ret_target_season()
+
         # prepare target_hour
         target_hour = ret_target_hour()
 
@@ -211,6 +226,7 @@ class TotalUsageDTTestCase(unittest.TestCase):
             start_train_dt=start_train_dt,
             end_train_dt=end_train_dt,
             ac_logs_list=ac_logs_list,
+            target_season=target_season,
             target_hour=target_hour,
         )
 
@@ -254,6 +270,9 @@ class ChangeUsageDTTestCase(unittest.TestCase):
         # prepare ac_logs_list
         ac_logs_list = ret_ac_logs_list()
 
+        # prepare target_season
+        target_season = ret_target_season()
+
         # prepare target_hour
         target_hour = ret_target_hour()
 
@@ -264,6 +283,7 @@ class ChangeUsageDTTestCase(unittest.TestCase):
             start_train_dt=start_train_dt,
             end_train_dt=end_train_dt,
             ac_logs_list=ac_logs_list,
+            target_season=target_season,
             target_hour=target_hour,
         )
 

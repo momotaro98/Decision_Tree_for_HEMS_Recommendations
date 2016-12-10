@@ -20,7 +20,7 @@ from . import utils
 
 
 class RecommnedationDecisionTree:
-    def __init__(self, start_train_dt, end_train_dt, ac_logs_list, target_hour):
+    def __init__(self, start_train_dt, end_train_dt, ac_logs_list, target_season, target_hour):
         # get args
         self.start_train_dt = start_train_dt
         self.end_train_dt = end_train_dt
@@ -139,7 +139,31 @@ class RecommnedationDecisionTree:
 
 
 class SettingTempDT(RecommnedationDecisionTree):
+    def _ret_target_settemp(self):
+        '''
+        (全ての行分の設定温度)
+        '''
+
+    def _ret_datetime_settemp_list(self):
+        pass
+
     def _ret_train_Y_list(self):
+        '''
+        Y data (label data) is HEMS data
+
+        example list to make
+        [
+          [datetime(2016, 7, 1), 0],
+          [datetime(2016, 7, 2), 1],
+          .
+          .
+          .
+          [datetime(2016, 8, 15), 1]
+        ]
+
+        columns
+        [date_list, is_done_list]
+        '''
         pass
 
 
