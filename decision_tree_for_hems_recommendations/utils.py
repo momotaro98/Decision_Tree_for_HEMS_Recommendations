@@ -32,41 +32,34 @@ def is_rain_or_not(char):
     return 0.0
 
 
-def ret_outer_data_list(start_dt, end_dt):
-    '''
-    Tenki data
+def _ret_dpmt_list(start_dt, end_dt):
+    dpmt_list = []
+    # get targeted year list order by year num
+    targeted_year_list = [y for y in range(start_dt.year, end_dt.year + 1)]
+    stat_dt = start_dt
+    while stat_dt.year < end_dt.year or stat_dt.month <= end_dt.month:
+        dpmt_list.append(DayPerMonthTenki(stat_dt.year, stat_dt.month))
+        if stat_dt.month in (1, 3, 5, 7, 8, 10, 12):
+            stat_dt += delta(days=31)
+        else:
+            stat_dt += delta(days=30)
+    return dpmt_list
 
-    example list to make
-    [
-        [datetime(2016, 7, 1) 1.0, 31.0, 25.0, 77.2, 0.0],
-        [datetime(2016, 7, 2) 1.0, 29.8, 24.8, 70.2, 0.0],
-        .
-        .
-        .
-        [datetime(2016, 8, 15) 1.0, 31, 25, 73.2, 0.0],
-    ]
-    date_list, weekday_list, max_temperature_list, min_temperature_list, ave_humidity_list, day_tenki_list
-
-    >>> from datetime import datetime as df
-    >>> start_dt = dt(2016, 7, 31)
-    >>> end_dt = dt(2016, 8, 1)
-    >>> ret_outer_data_list(start_dt, end_dt)
-    [[datetime.date(2016, 7, 31), 1.0, 30.8, 24.4, 60.0, 1.0], [datetime.date(2016, 8, 1), 0.0, 31.5, 24.6, 60.0, 1.0]]
-    '''
-
-    """
-    if start_dt.year != end_dt.year:
-        raise Exception('start_dt year and end_dt year must be same.')
-    """
-    # stat_dt = dt(year=year, month=month, day=1)
+def _ret_date_list(start_dt, end_dt):
     stat_dt = start_dt
     date_list = []
-    weekday_list = []
     while stat_dt <= end_dt:
         # 日付リスト作成
         date_list.append(stat_dt.date())
+        stat_dt += delta(days=1)
+    return date_list
+
+def _ret_weekday_list(start_dt, end_dt):
+    stat_dt = start_dt
+    weekday_list = []
+    while stat_dt <= end_dt:
         # 平日休日リスト作成
-        # 平日:'w', 休日:'h'
+        # 平日:'w' or 0.0, 休日:'h' or 1.0
         wd = stat_dt.weekday()  # 曜日取得
         if 0 <= wd <= 4:
             # weekday_list.append('w')
@@ -75,11 +68,12 @@ def ret_outer_data_list(start_dt, end_dt):
             # weekday_list.append('h')
             weekday_list.append(1.0)
         stat_dt += delta(days=1)
+    return weekday_list
 
-    # tenkishocho モジュールを取得
-    dpmt_list = [DayPerMonthTenki(start_dt.year, month) \
-        for month in range(start_dt.month, end_dt.month + 1)]
-    # Causion: ↑は年越しに対応していない
+
+def _ret_outer_env_list(start_dt, end_dt):
+    # tenkishocho DayPerMonthTenki オブジェクトを取得
+    dpmt_list = _ret_dpmt_list(start_dt, end_dt)
 
     max_temperature_list = []
     min_temperature_list = []
@@ -128,10 +122,40 @@ def ret_outer_data_list(start_dt, end_dt):
                 break
             day_tenki_list.append(is_rain_or_not(v))
 
-    # check the length
+    return (max_temperature_list, min_temperature_list,
+            ave_humidity_list, day_tenki_list)
+
+
+def ret_outer_data_list(start_dt, end_dt):
+    '''
+    Tenki data
+
+    example list to make
+    [
+        [datetime(2016, 7, 1) 1.0, 31.0, 25.0, 77.2, 0.0],
+        [datetime(2016, 7, 2) 1.0, 29.8, 24.8, 70.2, 0.0],
+        .
+        .
+        .
+        [datetime(2016, 8, 15) 1.0, 31, 25, 73.2, 0.0],
+    ]
+    date_list, weekday_list, max_temperature_list, min_temperature_list, ave_humidity_list, day_tenki_list
+
+    [[datetime.date(2016, 7, 31), 1.0, 30.8, 24.4, 60.0, 1.0], [datetime.date(2016, 8, 1), 0.0, 31.5, 24.6, 60.0, 1.0]]
+    '''
+
+    # get date_list
+    date_list = _ret_date_list(start_dt, end_dt)
+    # get weekday_list
+    weekday_list = _ret_weekday_list(start_dt, end_dt)
+    # get env_lists
+    max_temperature_list, min_temperature_list, \
+        ave_humidity_list, day_tenki_list = _ret_outer_env_list(
+            start_dt, end_dt
+        )
+
+    # check the lists length
     if len(date_list) != len(max_temperature_list):
-        print('len(date_list)', len(date_list))
-        print('len(max_temperature_list)', len(max_temperature_list))
         raise Exception('これからzipしていくリストの長さが違うでよ')
 
     ret_list = [[c1, c2, c3, c4, c5, c6] for c1, c2, c3, c4, c5, c6 in zip(
