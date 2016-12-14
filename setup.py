@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="decision_tree_for_hems_recommendations",
-    version="0.0.2",
+    version="0.0.3",
     author="Shintaro Ikeda",
     author_email="ikenshirogivenup98@gmail.com",
     license="MIT",
