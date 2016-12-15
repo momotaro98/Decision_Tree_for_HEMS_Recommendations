@@ -1,7 +1,7 @@
 import unittest
 
 from datetime import datetime
-
+from tenkishocho import DayPerMonthTenki
 
 from decision_tree_for_hems_recommendations import utils
 
@@ -60,3 +60,27 @@ class UtilsTestCase(unittest.TestCase):
         # length
         # length check
         self.assertEqual(len(dlist), 62)
+
+    def test_ret_predicted_outer_data_list_with_kishocho(self):
+        target_date = datetime(2015, 12, 24).date()
+        dpmt = DayPerMonthTenki(target_date.year, target_date.month)
+
+        # Test _ret_temp_max_with_dpmt function
+        temp_max = utils._ret_temp_max_with_dpmt(dpmt, target_date)
+        self.assertEqual(temp_max, 15.4)
+
+        # Test _ret_temp_min_with_dpmt function
+        temp_min = utils._ret_temp_min_with_dpmt(dpmt, target_date)
+        self.assertEqual(temp_min, 5.5)
+
+        # Test _ret_humidity_ave_with_dpmt function
+        humidity_ave = utils._ret_humidity_ave_with_dpmt(dpmt, target_date)
+        self.assertEqual(humidity_ave, 82.0)
+
+        # Test _ret_tenki_with_dpmt function
+        tenki = utils._ret_tenki_with_dpmt(dpmt, target_date)
+        self.assertEqual(tenki, 0.0)
+
+        # Test ret_predicted_outer_data_list_with_kishocho
+        pod_list = utils.ret_predicted_outer_data_list_with_kishocho(target_date)
+        self.assertEqual(pod_list, [0.0, 15.4, 5.5, 82.0, 0.0])  # 2015-12-24 is Thurseday

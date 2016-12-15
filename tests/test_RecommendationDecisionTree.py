@@ -174,9 +174,9 @@ class RecommnedationDecisionTreeTestCase(unittest.TestCase):
         self.assertEqual(y[2], 0)
         self.assertEqual(y[3], 0)
 
-    def test_get_test_X_list(self):
+    def test_get_test_X_list_with_OWM(self):
         OWM_API_KEY = utils.ret_OWM_API_KEY()
-        self.rDT.get_test_X_list(OWM_API_KEY)
+        self.rDT.get_test_X_list_with_OWM(OWM_API_KEY)
         dlist = self.rDT.test_X_list
         self.assertEqual(len(dlist), 5)
 
