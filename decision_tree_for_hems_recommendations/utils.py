@@ -16,6 +16,7 @@ def ret_OWM_API_KEY():
         raise Exception('OWM_API_KEY not found')
     return api
 
+
 def is_rain_or_not(char):
     '''
     >>> is_rain_or_not('晴時々曇')
@@ -32,17 +33,54 @@ def is_rain_or_not(char):
     return 0.0
 
 
+def ret_the_month_days(month):
+    MONTH_DAYS_DICT = {
+        1: 31, 2: 28, 3: 31, 4: 30, 5: 31, 6: 30,
+        7: 31, 8: 31, 9: 30, 10: 31, 11: 30, 12: 31
+    }
+    days = MONTH_DAYS_DICT[month]
+    return days
+
+
+def shift_next_one_month(s_dt):
+    '''
+    >>> from datetime import datetime as dt
+    >>> shift_next_one_month(dt(2015, 4, 1))
+    datetime.datetime(2015, 5, 1, 0, 0)
+    >>> shift_next_one_month(dt(2015, 12, 1))
+    datetime.datetime(2016, 1, 1, 0, 0)
+    >>> shift_next_one_month(dt(2016, 3, 31))
+    datetime.datetime(2016, 4, 30, 0, 0)
+    >>> shift_next_one_month(dt(2016, 1, 31))
+    datetime.datetime(2016, 2, 28, 0, 0)
+    '''
+    ret_year = s_dt.year if s_dt.month < 12 else s_dt.year + 1
+    ret_month = s_dt.month + 1 if s_dt.month < 12 else 1
+    days_next_month_has = ret_the_month_days(ret_month)
+    ret_day = min(s_dt.day, days_next_month_has)
+    ret_dt = dt(
+        ret_year, ret_month, ret_day,
+        s_dt.hour, s_dt.minute, s_dt.second
+    )
+    return ret_dt
+
+
 def _ret_dpmt_list(start_dt, end_dt):
+    '''
+    # tests written in tests/test_utilss.py
+    '''
     dpmt_list = []
     # get targeted year list order by year num
     targeted_year_list = [y for y in range(start_dt.year, end_dt.year + 1)]
-    stat_dt = start_dt
-    while stat_dt.year < end_dt.year or stat_dt.month <= end_dt.month:
-        dpmt_list.append(DayPerMonthTenki(stat_dt.year, stat_dt.month))
-        if stat_dt.month in (1, 3, 5, 7, 8, 10, 12):
-            stat_dt += delta(days=31)
-        else:
-            stat_dt += delta(days=30)
+    # get days end_dt has
+    end_dts_month_days = ret_the_month_days(end_dt.month)
+    # set end_dt's last month's dt
+    end_dts_month_last_dt = dt(end_dt.year, end_dt.month, end_dts_month_days, 23, 59, 59)
+    # set state datetime
+    s_dt = start_dt
+    while s_dt <= end_dts_month_last_dt:
+        dpmt_list.append(DayPerMonthTenki(s_dt.year, s_dt.month))
+        s_dt = shift_next_one_month(s_dt)  # increment s_dt as per month
     return dpmt_list
 
 

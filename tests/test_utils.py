@@ -8,13 +8,49 @@ from decision_tree_for_hems_recommendations import utils
 
 class UtilsTestCase(unittest.TestCase):
     def test__ret_dpmt_list(self):
+        # Date Case 1
         start_dt = datetime(2015, 12, 1)
         end_dt = datetime(2016, 1, 31)
         dlist = utils._ret_dpmt_list(
             start_dt=start_dt,
             end_dt=end_dt
         )
-        # length check
+        self.assertEqual(len(dlist), 2)
+
+        # Date Case 2
+        start_dt = datetime(2015, 11, 1)
+        end_dt = datetime(2015, 12, 11)  # There Was a Bug!
+        dlist = utils._ret_dpmt_list(
+            start_dt=start_dt,
+            end_dt=end_dt
+        )
+        self.assertEqual(len(dlist), 2)
+
+        # Date Case 3
+        start_dt = datetime(2016, 1, 1)
+        end_dt = datetime(2016, 2, 1)
+        dlist = utils._ret_dpmt_list(
+            start_dt=start_dt,
+            end_dt=end_dt
+        )
+        self.assertEqual(len(dlist), 2)
+
+        # Date Case 4
+        start_dt = datetime(2016, 1, 1)
+        end_dt = datetime(2016, 1, 31)
+        dlist = utils._ret_dpmt_list(
+            start_dt=start_dt,
+            end_dt=end_dt
+        )
+        self.assertEqual(len(dlist), 1)
+
+        # Date Case 5
+        start_dt = datetime(2016, 1, 31)
+        end_dt = datetime(2016, 2, 1)
+        dlist = utils._ret_dpmt_list(
+            start_dt=start_dt,
+            end_dt=end_dt
+        )
         self.assertEqual(len(dlist), 2)
 
     def test__ret_date_list(self):
