@@ -16,6 +16,8 @@
     * [X] ChangeUsage
 '''
 
+from datetime import datetime
+
 from . import utils
 
 
@@ -112,19 +114,39 @@ class RecommnedationDecisionTree:
         clf = utils.ret_trained_DT_clf(X, Y)
         return clf
 
-    def get_test_X_list(self, OWM_API_KEY):
+    def get_test_X_list_with_OWM(self, OWM_API_KEY):
         """
         '現在'の天気情報を取得する
 
         self.test_X_list example
         [1.0, 34.2, 25.8, 50.0, 0.0]
+        ( [平日休日, 最高気温, 最低気温, 平均湿度, 天候] )
         """
-        self.test_X_list = utils.ret_predicted_outer_data_list(OWM_API_KEY)
+        self.test_X_list = \
+            utils.ret_predicted_outer_data_list_with_OWM(OWM_API_KEY)
 
-    def ret_predicted_Y_int(self):
-        # set self.test_X_list
+    def get_test_X_list_with_kishocho(self, target_date):
+        """
+        '指定の日付'の天気情報を取得する
+
+        self.test_X_list example
+        [1.0, 34.2, 25.8, 50.0, 0.0]
+        ( [平日休日, 最高気温, 最低気温, 平均湿度, 天候] )
+        """
+        self.test_X_list = \
+            utils.ret_predicted_outer_data_list_with_kishocho(target_date)
+
+    def ret_predicted_Y_int(self, target_date=None):
+        # get OpenWeathreMap API Key
         OWM_API_KEY = utils.ret_OWM_API_KEY()
-        self.get_test_X_list(OWM_API_KEY)
+
+        # set self.test_X_list
+        if not target_date:
+            # If target_date is None, use OWM.
+            self.get_test_X_list_with_OWM(OWM_API_KEY)
+        else:
+            # If target_date is dictated, use tenkishocho
+            self.get_test_X_list_with_kishocho(target_date)
 
         # convert ndarray
         test_x = [self.test_X_list]

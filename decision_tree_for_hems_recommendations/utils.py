@@ -45,6 +45,7 @@ def _ret_dpmt_list(start_dt, end_dt):
             stat_dt += delta(days=30)
     return dpmt_list
 
+
 def _ret_date_list(start_dt, end_dt):
     stat_dt = start_dt
     date_list = []
@@ -190,7 +191,7 @@ def ret_trained_DT_clf(X, Y):
     return clf
 
 
-def ret_predicted_outer_data_list(OWM_API_KEY, target_date=dt.now().date()):
+def ret_predicted_outer_data_list_with_OWM(OWM_API_KEY, target_date=dt.now().date()):
     '''
     Tenki data
 
@@ -201,14 +202,7 @@ def ret_predicted_outer_data_list(OWM_API_KEY, target_date=dt.now().date()):
 
     # 平日休日 weekday
     wd = target_date.weekday()  # 曜日取得
-    '''
-    if 0 <= wd <= 4:
-        # weekday = 'w'
-        weekday = 0.0
-    elif 5 <= wd <= 6:
-        # weekday = 'h'
-        weekday = 1.0
-    '''
+    # 平日=>0.0, 休日=>1.0
     weekday = 0.0 if 0 <= wd <= 4 else 1.0
 
     # Instanciate owm and weather
@@ -248,6 +242,65 @@ def ret_predicted_outer_data_list(OWM_API_KEY, target_date=dt.now().date()):
 
     return ret_list
 
+
+def _ret_temp_max_with_dpmt(dpmt, target_date):
+    temp_max = [v for day, v in dpmt.get_max_temperature().items() \
+        if day == target_date.day][0]
+    return temp_max
+
+
+def _ret_temp_min_with_dpmt(dpmt, target_date):
+    temp_min = [v for day, v in dpmt.get_min_temperature().items() \
+        if day == target_date.day][0]
+    return temp_min
+
+
+def _ret_humidity_ave_with_dpmt(dpmt, target_date):
+    humidity_ave = [v for day, v in dpmt.get_ave_humidity().items() \
+        if day == target_date.day][0]
+    return humidity_ave
+
+
+def _ret_tenki_with_dpmt(dpmt, target_date):
+    '''
+    雨でないとき->0.0
+    雨のとき->1.0
+    を返す
+    '''
+    tenki_str = [v for day, v in dpmt.get_day_tenki().items() \
+        if day == target_date.day][0]
+    tenki = is_rain_or_not(tenki_str)
+    return tenki
+
+
+def ret_predicted_outer_data_list_with_kishocho(target_date):
+    '''
+    Tenki data
+
+    example list to make
+    [1.0, 31.0, 25.0, 77.2, 0.0],
+    weekday_list, max_temperature_list, min_temperature_list, ave_humidity_list, day_tenki_list
+    '''
+
+    # 平日休日 weekday
+    wd = target_date.weekday()  # 曜日取得
+    # 平日=>0.0, 休日=>1.0
+    weekday = 0.0 if 0 <= wd <= 4 else 1.0
+
+
+    # get the target_date's DayPerMonthTenki instance
+    dpmt = DayPerMonthTenki(target_date.year, target_date.month)
+
+    temp_max = _ret_temp_max_with_dpmt(dpmt, target_date)
+    temp_min = _ret_temp_min_with_dpmt(dpmt, target_date)
+    humidity_ave = _ret_humidity_ave_with_dpmt(dpmt, target_date)
+    # tenki
+    tenki = _ret_tenki_with_dpmt(dpmt, target_date)
+
+    # make ret_list
+    ret_list = [weekday, temp_max, temp_min, humidity_ave, tenki]
+
+    return ret_list
 
 def make_delta_hour(start_dt, end_dt=dt.now()):
     """
