@@ -178,11 +178,27 @@ class RecommnedationDecisionTreeTestCase(unittest.TestCase):
         OWM_API_KEY = utils.ret_OWM_API_KEY()
         self.rDT.get_test_X_list_with_OWM(OWM_API_KEY)
         dlist = self.rDT.test_X_list
+        # check length
         self.assertEqual(len(dlist), 5)
 
+    def test_get_test_X_list_with_kishocho(self):
+        target_date = datetime(2015, 12, 24).date()
+        self.rDT.get_test_X_list_with_kishocho(target_date)
+        dlist = self.rDT.test_X_list
+        # check length
+        self.assertEqual(len(dlist), 5)
+        # check list values
+        self.assertEqual(dlist, [0.0, 15.4, 5.5, 82.0, 0.0])  # 2015-12-24 is Thurseday
+
     def test_ret_predicted_Y_int(self):
-        pred_y = self.rDT.ret_predicted_Y_int()
-        self.assertIn(pred_y, [0, 1])  # 予測値pred_yが0または1であるかを確認
+        # Future tenki with OpenWeathreMap
+        pred_y_with_OWM = self.rDT.ret_predicted_Y_int()
+        self.assertIn(pred_y_with_OWM, [0, 1])  # 予測値pred_y_with_OWMが0または1であるかを確認
+
+        # Past tenki with tenkishocho
+        target_date = datetime(2015, 12, 24).date()
+        pred_y_with_kishocho = self.rDT.ret_predicted_Y_int(target_date)
+        self.assertIn(pred_y_with_kishocho, [0, 1])  # 予測値pred_y_with_kishochoが0または1であるかを確認
 
 
 class SettingTempDTTestCase(unittest.TestCase):

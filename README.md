@@ -38,7 +38,11 @@ settemp_DT = SettingTempDT(
 	target_season=target_season,
 	target_hour=target_hour,
 )
-is_deliver_settemp_content = settemp_DT.ret_predicted_Y_int()
+# get Future is_flag
+is_deliver_settemp_content_future = settemp_DT.ret_predicted_Y_int()
+# get Past is_flag
+target_date = datetime(2015, 12, 24).date()
+is_deliver_settemp_content_past = settemp_DT.ret_predicted_Y_int(target_date)
 
 totalusage_DT = TotalUsageDT(
 	start_train_dt=start_train_dt,
@@ -47,7 +51,12 @@ totalusage_DT = TotalUsageDT(
 	target_season=target_season,
 	target_hour=target_hour,
 )
-is_deliver_totalusage_content = totalusage_DT.ret_predicted_Y_int()
+# get Future is_flag
+is_deliver_settemp_content_future = totalusage_DT.ret_predicted_Y_int()
+# get Past is_flag
+target_date = datetime(2015, 12, 24).date()
+is_deliver_settemp_content_past = totalusage_DT.ret_predicted_Y_int(target_date)
+
 
 changeusage_DT = ChangeUsageDT(
 	start_train_dt=start_train_dt,
@@ -56,5 +65,9 @@ changeusage_DT = ChangeUsageDT(
 	target_season=target_season,
 	target_hour=target_hour,
 )
-is_deliver_changeusage_content = changeusage_DT.ret_predicted_Y_int()
+# get Future is_flag
+is_deliver_settemp_content_future = changeusage_DT.ret_predicted_Y_int()
+# get Past is_flag
+target_date = datetime(2015, 12, 24).date()
+is_deliver_settemp_content_past = changeusage_DT.ret_predicted_Y_int(target_date)
 ```
